@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Prowler - Cloud Security Assessment Report</title>
+  <style>
+    body { font-family: sans-serif; background: #0f172a; color: #f8fafc; padding: 20px; }
+    .card { background: #1e293b; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+    th, td { border: 1px solid #334155; padding: 8px 12px; text-align: left; }
+    th { background: #334155; }
+    .badge-fail { color: #f87171; font-weight: bold; }
+    .badge-pass { color: #4ade80; font-weight: bold; }
+    .badge-critical { background: #7f1d1d; color: #fca5a5; padding: 2px 6px; border-radius: 4px; }
+    .badge-high { background: #7c2d12; color: #fdba74; padding: 2px 6px; border-radius: 4px; }
+    .badge-medium { background: #78350f; color: #fde047; padding: 2px 6px; border-radius: 4px; }
+    .badge-low { background: #1e3a8a; color: #93c5fd; padding: 2px 6px; border-radius: 4px; }
+  </style>
+</head>
+<body>
+  <h1>Prowler Security Assessment Report</h1>
+  <div class="card" id="overview">
+    <p><strong>Provider:</strong> AWS | <strong>Account ID:</strong> 123456789012 | <strong>Profile:</strong> production</p>
+    <p><strong>Date:</strong> 2026-09-28 14:30:00 UTC | <strong>Prowler Version:</strong> 3.11.3</p>
+    <p><strong>Total Checks:</strong> 8 | <strong>Passed:</strong> 4 | <strong>Failed:</strong> 4</p>
+  </div>
+
+  <h2>Findings Detail</h2>
+  <table id="findingsTable">
+    <thead>
+      <tr>
+        <th>Status</th>
+        <th>Severity</th>
+        <th>Service</th>
+        <th>Region</th>
+        <th>Check ID</th>
+        <th>Check Title</th>
+        <th>Resource ID</th>
+        <th>Status Extended</th>
+        <th>Risk</th>
+        <th>Remediation</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="badge-fail">FAIL</span></td>
+        <td><span class="badge-critical">critical</span></td>
+        <td>iam</td>
+        <td>global</td>
+        <td>iam_root_mfa_enabled</td>
+        <td>Ensure MFA is enabled for the 'root' user account</td>
+        <td>root</td>
+        <td>Root account does not have MFA enabled.</td>
+        <td>Total administrative takeover of AWS account if credentials leak.</td>
+        <td>Enable virtual or hardware MFA on root account via IAM console.</td>
+      </tr>
+      <tr>
+        <td><span class="badge-fail">FAIL</span></td>
+        <td><span class="badge-critical">critical</span></td>
+        <td>s3</td>
+        <td>us-east-1</td>
+        <td>s3_bucket_public_access</td>
+        <td>Ensure S3 Buckets do not allow public read/write access</td>
+        <td>finance-data-vault</td>
+        <td>Bucket finance-data-vault grants public READ access to anonymous users.</td>
+        <td>Confidential corporate financial records exposed to the public Internet.</td>
+        <td>Enable S3 Block Public Access setting immediately.</td>
+      </tr>
+      <tr>
+        <td><span class="badge-fail">FAIL</span></td>
+        <td><span class="badge-high">high</span></td>
+        <td>ec2</td>
+        <td>us-west-2</td>
+        <td>ec2_securitygroup_allow_ingress_from_internet_to_tcp_port_22</td>
+        <td>Ensure no Security Groups allow ingress from 0.0.0.0/0 to port 22 (SSH)</td>
+        <td>sg-01928374</td>
+        <td>Security group sg-01928374 allows SSH (port 22) open to 0.0.0.0/0.</td>
+        <td>Vulnerability to SSH brute force and remote exploitation.</td>
+        <td>Restrict inbound SSH to known corporate IP addresses or use SSM Session Manager.</td>
+      </tr>
+      <tr>
+        <td><span class="badge-pass">PASS</span></td>
+        <td><span class="badge-high">high</span></td>
+        <td>s3</td>
+        <td>us-east-1</td>
+        <td>s3_bucket_default_encryption</td>
+        <td>Ensure S3 Buckets have Default Encryption enabled</td>
+        <td>secure-logs-bucket</td>
+        <td>Bucket secure-logs-bucket has SSE-S3 encryption enabled.</td>
+        <td>Unencrypted data exposed in physical storage theft.</td>
+        <td>Bucket has encryption configured.</td>
+      </tr>
+      <tr>
+        <td><span class="badge-pass">PASS</span></td>
+        <td><span class="badge-medium">medium</span></td>
+        <td>iam</td>
+        <td>global</td>
+        <td>iam_password_policy_minimum_length_14</td>
+        <td>Ensure IAM password policy requires minimum length of 14 or greater</td>
+        <td>iam-policy</td>
+        <td>IAM password policy requires minimum length of 16 characters.</td>
+        <td>Weak passwords cracked easily.</td>
+        <td>Password policy is configured securely.</td>
+      </tr>
+      <tr>
+        <td><span class="badge-fail">FAIL</span></td>
+        <td><span class="badge-medium">medium</span></td>
+        <td>cloudtrail</td>
+        <td>us-east-1</td>
+        <td>cloudtrail_multi_region_enabled</td>
+        <td>Ensure CloudTrail is enabled in all regions</td>
+        <td>cloudtrail-primary</td>
+        <td>CloudTrail is only logging us-east-1, multi-region logging is disabled.</td>
+        <td>Actions in other regions remain unmonitored during an attack.</td>
+        <td>Enable multi-region trail logging in CloudTrail settings.</td>
+      </tr>
+      <tr>
+        <td><span class="badge-pass">PASS</span></td>
+        <td><span class="badge-high">high</span></td>
+        <td>guardduty</td>
+        <td>us-east-1</td>
+        <td>guardduty_is_enabled</td>
+        <td>Ensure Amazon GuardDuty is enabled in all active regions</td>
+        <td>det-998877</td>
+        <td>GuardDuty detector is enabled and active.</td>
+        <td>Undetected malicious activity and anomalies.</td>
+        <td>GuardDuty is operational.</td>
+      </tr>
+      <tr>
+        <td><span class="badge-pass">PASS</span></td>
+        <td><span class="badge-low">low</span></td>
+        <td>kms</td>
+        <td>us-east-1</td>
+        <td>kms_cmk_rotation_enabled</td>
+        <td>Ensure rotation for customer managed CMKs is enabled</td>
+        <td>key-887766</td>
+        <td>Customer Managed Key rotation is active.</td>
+        <td>Cryptographic compromise blast radius.</td>
+        <td>Key rotation configured.</td>
+      </tr>
+    </tbody>
+  </table>
+</body>
+</html>

@@ -1,0 +1,140 @@
+[
+  {
+    "AssessmentStartTime": "2026-09-28T15:00:00Z",
+    "FindingUniqueId": "prowler-azure-storage_ensure_secure_transfer-sub123-rgprod",
+    "Provider": "azure",
+    "Profile": "prod-subscription",
+    "AccountId": "sub-8899-aabb-ccdd",
+    "AccountName": "Azure-Production-Subscription",
+    "Region": "eastus",
+    "ServiceName": "storage",
+    "SubServiceName": "storage-account",
+    "CheckID": "storage_ensure_secure_transfer",
+    "CheckTitle": "Ensure 'Secure transfer required' is set to 'Enabled' on Storage Accounts",
+    "CheckType": ["Storage", "Encryption in Transit"],
+    "Status": "FAIL",
+    "StatusExtended": "Storage Account 'prodstoragevault' allows unencrypted HTTP connections.",
+    "Severity": "high",
+    "ResourceType": "Microsoft.Storage/storageAccounts",
+    "ResourceId": "prodstoragevault",
+    "ResourceArn": "/subscriptions/sub-8899-aabb-ccdd/resourceGroups/rg-prod/providers/Microsoft.Storage/storageAccounts/prodstoragevault",
+    "Description": "The secure transfer option enhances security for storage accounts by only allowing requests over HTTPS.",
+    "Risk": "Unencrypted HTTP requests risk eavesdropping, man-in-the-middle attacks, and credential interception.",
+    "Remediation": {
+      "Recommendation": {
+        "Text": "Enable 'Secure transfer required' in the Azure portal or CLI to enforce HTTPS for REST APIs.",
+        "Url": "https://learn.microsoft.com/en-us/azure/storage/common/storage-require-secure-transfer"
+      },
+      "Code": {
+        "CLI": "az storage account update --name prodstoragevault --resource-group rg-prod --https-only true"
+      }
+    },
+    "Compliance": {
+      "CIS-Azure-2.0": ["3.1"],
+      "NIST-800-53": ["SC-8", "SC-13"]
+    },
+    "Categories": ["data-protection", "azure-storage"]
+  },
+  {
+    "AssessmentStartTime": "2026-09-28T15:00:00Z",
+    "FindingUniqueId": "prowler-azure-keyvault_recoverable_softdelete-sub123",
+    "Provider": "azure",
+    "Profile": "prod-subscription",
+    "AccountId": "sub-8899-aabb-ccdd",
+    "AccountName": "Azure-Production-Subscription",
+    "Region": "eastus",
+    "ServiceName": "keyvault",
+    "SubServiceName": "vault",
+    "CheckID": "keyvault_recoverable_softdelete",
+    "CheckTitle": "Ensure Key Vaults have Soft Delete and Purge Protection enabled",
+    "CheckType": ["Key Vault", "Data Protection"],
+    "Status": "PASS",
+    "StatusExtended": "Key Vault 'corp-keyvault-prod' has Soft Delete and Purge Protection enabled.",
+    "Severity": "medium",
+    "ResourceType": "Microsoft.KeyVault/vaults",
+    "ResourceId": "corp-keyvault-prod",
+    "ResourceArn": "/subscriptions/sub-8899-aabb-ccdd/resourceGroups/rg-prod/providers/Microsoft.KeyVault/vaults/corp-keyvault-prod",
+    "Description": "Soft delete ensures deleted keys, secrets, and certificates can be recovered within a retention window.",
+    "Risk": "Permanent accidental or malicious destruction of encryption keys.",
+    "Remediation": {
+      "Recommendation": {
+        "Text": "Key Vault is configured with soft-delete.",
+        "Url": "https://learn.microsoft.com/en-us/azure/key-vault/general/soft-delete-overview"
+      }
+    },
+    "Compliance": {
+      "CIS-Azure-2.0": ["8.4"],
+      "NIST-800-53": ["CP-9"]
+    },
+    "Categories": ["key-management"]
+  },
+  {
+    "AssessmentStartTime": "2026-09-28T15:00:00Z",
+    "FindingUniqueId": "prowler-azure-defender_ensure_defender_for_servers_is_on-sub123",
+    "Provider": "azure",
+    "Profile": "prod-subscription",
+    "AccountId": "sub-8899-aabb-ccdd",
+    "AccountName": "Azure-Production-Subscription",
+    "Region": "eastus",
+    "ServiceName": "defender",
+    "SubServiceName": "security-pricing",
+    "CheckID": "defender_ensure_defender_for_servers_is_on",
+    "CheckTitle": "Ensure Microsoft Defender for Servers is set to 'On'",
+    "CheckType": ["Threat Protection", "Defender"],
+    "Status": "FAIL",
+    "StatusExtended": "Microsoft Defender for Servers is set to 'Free' (Off) for this subscription.",
+    "Severity": "high",
+    "ResourceType": "Microsoft.Security/pricings",
+    "ResourceId": "VirtualMachines",
+    "ResourceArn": "/subscriptions/sub-8899-aabb-ccdd/providers/Microsoft.Security/pricings/VirtualMachines",
+    "Description": "Defender for Servers provides threat detection and vulnerability management for Windows and Linux servers.",
+    "Risk": "Inability to detect endpoint compromises, malware, and suspicious processes.",
+    "Remediation": {
+      "Recommendation": {
+        "Text": "Enable Microsoft Defender for Servers Plan 1 or Plan 2 in Microsoft Defender for Cloud.",
+        "Url": "https://learn.microsoft.com/en-us/azure/defender-for-cloud/defender-for-servers-introduction"
+      },
+      "Code": {
+        "CLI": "az security pricing create --name VirtualMachines --tier Standard"
+      }
+    },
+    "Compliance": {
+      "CIS-Azure-2.0": ["2.1.1"],
+      "NIST-800-53": ["SI-4"]
+    },
+    "Categories": ["threat-detection"]
+  },
+  {
+    "AssessmentStartTime": "2026-09-28T15:00:00Z",
+    "FindingUniqueId": "prowler-azure-sql_server_auditing_enabled-sub123",
+    "Provider": "azure",
+    "Profile": "prod-subscription",
+    "AccountId": "sub-8899-aabb-ccdd",
+    "AccountName": "Azure-Production-Subscription",
+    "Region": "eastus",
+    "ServiceName": "sql",
+    "SubServiceName": "sql-server",
+    "CheckID": "sql_server_auditing_enabled",
+    "CheckTitle": "Ensure Auditing is set to 'On' for Azure SQL Servers",
+    "CheckType": ["Database", "Logging"],
+    "Status": "PASS",
+    "StatusExtended": "SQL Server 'sql-corp-prod' has auditing enabled and writing to Log Analytics.",
+    "Severity": "high",
+    "ResourceType": "Microsoft.Sql/servers",
+    "ResourceId": "sql-corp-prod",
+    "ResourceArn": "/subscriptions/sub-8899-aabb-ccdd/resourceGroups/rg-prod/providers/Microsoft.Sql/servers/sql-corp-prod",
+    "Description": "Auditing tracks database events and helps maintain regulatory compliance.",
+    "Risk": "Loss of audit trail during unauthorized database queries.",
+    "Remediation": {
+      "Recommendation": {
+        "Text": "SQL Auditing is properly configured.",
+        "Url": "https://learn.microsoft.com/en-us/azure/azure-sql/database/auditing-overview"
+      }
+    },
+    "Compliance": {
+      "CIS-Azure-2.0": ["4.1.1"],
+      "NIST-800-53": ["AU-2", "AU-12"]
+    },
+    "Categories": ["database-security"]
+  }
+]

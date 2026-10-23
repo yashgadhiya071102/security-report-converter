@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Executive Security Audit | Cloud Infrastructure Assessment</title>
+  <meta name="description" content="Convert JSON and HTML security scan reports into executive-grade PDF reports with visual charts, metrics, and actionable remediations.">
+  
+  <!-- Modern Typography from Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  
+  <!-- Chart.js for High-Resolution Interactive Charts -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+
+  <link rel="stylesheet" href="styles.css?v=42">
+</head>
+<body class="dark-theme">
+
+  <!-- Print Wrapper -->
+  <table class="print-wrapper" style="width: 100%; border-collapse: collapse; border: none; margin: 0; padding: 0;">
+    <thead class="print-header">
+      <tr>
+        <td style="padding: 0; margin: 0; border: none;">
+          <!-- Top Navigation Header -->
+          <header class="app-header">
+    <div class="header-container">
+      <div class="brand">
+        <div class="logo-group" style="display: flex; align-items: center;">
+          <img src="watermark_purple.png?v=2" alt="iSecurify Icon" class="header-logo-icon" style="height: 40px; margin-right: 8px; object-fit: contain;">
+          <span class="header-logo-text">iSecurify</span>
+        </div>
+        <div>
+          <h1 class="brand-title">Executive Security Report</h1>
+          <span class="brand-badge">Executive Security Converter</span>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <button id="themeToggleBtn" class="btn btn-ghost" title="Toggle Dark/Light Mode">
+          <svg id="themeIcon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="5"/>
+            <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+          </svg>
+          <span class="btn-text">Theme</span>
+        </button>
+
+        <button id="openConfigModalBtn" class="btn btn-secondary">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/>
+            <circle cx="12" cy="12" r="3"/>
+          </svg>
+          PDF Settings
+        </button>
+
+        <button id="exportPdfBtn" class="btn btn-primary" disabled>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="7 10 12 15 17 10"/>
+            <line x1="12" y1="15" x2="12" y2="3"/>
+          </svg>
+          Export Executive PDF
+        </button>
+      </div>
+    </div>
+          </header>
+        </td>
+      </tr>
+    </thead>
+    <tbody class="print-body">
+      <tr>
+        <td style="padding: 0; margin: 0; border: none;">
+          <main class="main-content">
+    <!-- File Input & Dropzone Hero -->
+    <section class="upload-section" id="uploadSection">
+      <div class="manual-report-fields">
+        <div class="manual-report-field">
+          <label for="cloudProviderInput">Cloud Provider</label>
+          <input type="text" id="cloudProviderInput" placeholder="Enter cloud provider name">
+        </div>
+        <div class="manual-report-field">
+          <label for="clientNameInput">Client Name</label>
+          <input type="text" id="clientNameInput" placeholder="Enter client name">
+        </div>
+      </div>
+
+      <div class="dropzone-card" id="dropzone">
+        <div class="dropzone-content">
+          <div class="upload-icon-circle">
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/>
+              <path d="M12 12v9"/>
+              <path d="m16 16-4-4-4 4"/>
+            </svg>
+          </div>
+          <h2 class="dropzone-title">Drag & Drop Security Scan Report Here</h2>
+          <p class="dropzone-desc">Supports <strong>JSON</strong> (standard & NDJSON), <strong>HTML</strong>, <strong>CSV</strong>, or generic scan exports</p>
+          
+          <div class="upload-btn-group">
+            <label for="fileInput" class="btn btn-primary">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="17 8 12 3 7 8"/>
+                <line x1="12" y1="3" x2="12" y2="15"/>
+              </svg>
+              Browse Report File
+            </label>
+            <input type="file" id="fileInput" accept=".json,.html,.htm,.txt" style="display: none;">
+
+            <button id="togglePasteBtn" class="btn btn-outline">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
+                <rect x="8" y="2" width="8" height="4" rx="1" ry="1"/>
+              </svg>
+              Paste JSON / HTML
+            </button>
+          </div>
+
+          <!-- Quick Sample Reports -->
+          <div class="samples-bar">
+            <span class="samples-label">Or test immediately with:</span>
+            <button class="sample-tag-btn" data-sample="aws">
+              <span class="dot aws-dot"></span> AWS Security Benchmark
+            </button>
+            <button class="sample-tag-btn" data-sample="azure">
+              <span class="dot azure-dot"></span> Azure Cloud Scan
+            </button>
+            <button class="sample-tag-btn" data-sample="html">
+              <span class="dot html-dot"></span> Sample HTML Report
+            </button>
+          </div>
+        </div>
+
+        <!-- Collapsible Paste Area -->
+        <div id="pasteAreaContainer" class="paste-container" style="display: none;">
+          <textarea id="rawTextInput" placeholder="Paste your raw JSON or HTML security report content here..."></textarea>
+          <div class="paste-actions">
+            <button id="submitPasteBtn" class="btn btn-primary btn-sm">Process Content</button>
+            <button id="cancelPasteBtn" class="btn btn-ghost btn-sm">Cancel</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Loading State -->
+    <div id="loadingOverlay" class="loading-overlay" style="display: none;">
+      <div class="spinner"></div>
+      <p id="loadingMessage">Parsing scan data and calculating metrics...</p>
+    </div>
+
+    <!-- Active Report Dashboard (Hidden until report loaded) -->
+    <section id="dashboardSection" class="dashboard-section" style="display: none;">
+      
+      <!-- Executive Summary Page -->
+      <div class="executive-summary-page">
+        <!-- Meta Information Strip -->
+        <div class="meta-strip card">
+        <div class="meta-item">
+          <span class="meta-lbl">Target Account</span>
+          <span id="metaAccount" class="meta-val highlight">-</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-lbl">Cloud Provider</span>
+          <span id="metaProvider" class="meta-val"></span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-lbl">Client Name</span>
+          <span id="metaClient" class="meta-val"></span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-lbl">Scan Timestamp</span>
+          <span id="metaTimestamp" class="meta-val">-</span>
+        </div>
+      </div>
+
+      <!-- Executive Overview Row -->
+      <div class="dashboard-grid">
+        <!-- Security Score Card -->
+        <div class="score-card card">
+          <div class="score-header">
+            <h3>Security Posture Score</h3>
+            <span id="gradeBadge" class="grade-badge grade-b">Grade B</span>
+          </div>
+          <div class="score-body">
+            <div class="gauge-wrapper">
+              <div class="score-number-display">
+                <span id="scoreDisplay" class="score-val">0%</span>
+                <span class="score-sub">COMPLIANT</span>
+              </div>
+              <svg class="score-svg" viewBox="0 0 120 120">
+                <circle class="gauge-bg" cx="60" cy="60" r="50"></circle>
+                <circle id="gaugeProgress" class="gauge-progress" cx="60" cy="60" r="50"></circle>
+              </svg>
+            </div>
+            <div class="score-description">
+              <h4 id="postureHeading">Assessment Evaluated</h4>
+              <p id="postureSummary">Analysis of evaluated cloud resource rules, security baselines, and configuration posture.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4 Metric Highlight Tiles -->
+        <div class="metrics-grid">
+          <div class="metric-card card">
+            <div class="metric-icon total-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="12" y1="8" x2="12" y2="12"/>
+                <line x1="12" y1="16" x2="12.01" y2="16"/>
+              </svg>
+            </div>
+            <div class="metric-data">
+              <span class="metric-label">Total Checks</span>
+              <span id="mTotal" class="metric-number">0</span>
+            </div>
+          </div>
+
+          <div class="metric-card card pass-card">
+            <div class="metric-icon pass-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                <polyline points="22 4 12 14.01 9 11.01"/>
+              </svg>
+            </div>
+            <div class="metric-data">
+              <span class="metric-label">Passed Checks</span>
+              <span id="mPassed" class="metric-number text-success">0</span>
+            </div>
+          </div>
+
+          <div class="metric-card card fail-card">
+            <div class="metric-icon fail-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="15" y1="9" x2="9" y2="15"/>
+                <line x1="9" y1="9" x2="15" y2="15"/>
+              </svg>
+            </div>
+            <div class="metric-data">
+              <span class="metric-label">Failed Checks</span>
+              <span id="mFailed" class="metric-number text-danger">0</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Charts Row -->
+      <div class="charts-row">
+        <!-- Severity Donut -->
+        <div class="chart-card card">
+          <div class="card-header">
+            <h3>Failure Severity Distribution</h3>
+            <span class="card-sub">By risk priority level</span>
+          </div>
+          <div class="donut-wrapper" style="display: flex; align-items: center; justify-content: center; gap: 20px; height: 230px; width: 100%;">
+            <div class="donut-chart-box" style="position: relative; width: 180px; height: 180px;">
+              <canvas id="severityChart"></canvas>
+              <div class="donut-center-text" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center;">
+                <div id="donutTotal" style="font-size: 28px; font-weight: 800; color: var(--text-main); line-height: 1;">0</div>
+                <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-top: 4px;">Failed</div>
+              </div>
+            </div>
+            <div id="severityLegend" class="donut-legend" style="display: flex; flex-direction: column; gap: 6px; font-family: var(--font-mono); font-size: 13px; color: var(--text-main);">
+              <!-- Rendered by JS -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Top Failing Services -->
+        <div class="chart-card card">
+          <div class="card-header">
+            <h3>Top Failing Services</h3>
+            <span class="card-sub">Services with highest non-compliance</span>
+          </div>
+          <div class="chart-container bar-container">
+            <canvas id="servicesChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Findings by Severity -->
+      <div class="severity-summary card">
+        <div class="card-header">
+          <h3>Findings by Severity</h3>
+          <span class="card-sub">Total findings and percentage distribution</span>
+        </div>
+        <div class="severity-summary-grid">
+          <div class="severity-summary-card severity-critical-card">
+            <div class="severity-summary-icon severity-critical-icon"></div>
+            <div class="severity-summary-content">
+              <span class="severity-summary-label">Critical</span>
+              <span id="severityCriticalCount" class="severity-summary-number">0</span>
+              <span id="severityCriticalPct" class="severity-summary-percent">0% of total findings</span>
+            </div>
+          </div>
+
+          <div class="severity-summary-card severity-high-card">
+            <div class="severity-summary-icon severity-high-icon"></div>
+            <div class="severity-summary-content">
+              <span class="severity-summary-label">High</span>
+              <span id="severityHighCount" class="severity-summary-number">0</span>
+              <span id="severityHighPct" class="severity-summary-percent">0% of total findings</span>
+            </div>
+          </div>
+
+          <div class="severity-summary-card severity-medium-card">
+            <div class="severity-summary-icon severity-medium-icon"></div>
+            <div class="severity-summary-content">
+              <span class="severity-summary-label">Medium</span>
+              <span id="severityMediumCount" class="severity-summary-number">0</span>
+              <span id="severityMediumPct" class="severity-summary-percent">0% of total findings</span>
+            </div>
+          </div>
+
+          <div class="severity-summary-card severity-low-card">
+            <div class="severity-summary-icon severity-low-icon"></div>
+            <div class="severity-summary-content">
+              <span class="severity-summary-label">Low</span>
+              <span id="severityLowCount" class="severity-summary-number">0</span>
+              <span id="severityLowPct" class="severity-summary-percent">0% of total findings</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      </div> <!-- End Executive Summary Page -->
+
+      <!-- Compliance Breakdown Table -->
+      <div class="card compliance-card" id="complianceContainer">
+        <div class="card-header">
+          <h3>Regulatory & Compliance Framework Alignment</h3>
+          <span class="card-sub">CIS Benchmarks, NIST, ISO 27001, PCI-DSS</span>
+        </div>
+        <div class="table-responsive">
+          <table class="data-table" id="complianceTable">
+            <thead>
+              <tr>
+                <th>Framework</th>
+                <th>Total Rules</th>
+                <th>Passed</th>
+                <th>Failed</th>
+                <th>Compliance %</th>
+                <th>Progress</th>
+              </tr>
+            </thead>
+            <tbody id="complianceTableBody">
+              <!-- Populated via JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Finding Status Guide -->
+      <div class="card status-guide-card">
+        <div class="card-header">
+          <h3>Finding Status Guide</h3>
+          <span class="card-sub">How security check results should be interpreted</span>
+        </div>
+        <div class="status-guide-table-wrapper">
+          <table class="status-guide-table">
+            <thead>
+              <tr>
+                <th>Status</th>
+                <th>What it means</th>
+                <th>Client-facing interpretation</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span class="status-guide-status"><span class="status-dot status-pass-dot"></span>PASS</span></td>
+                <td>The tested configuration satisfies the check.</td>
+                <td><strong>Control is implemented / compliant for this test</strong></td>
+                <td>No remediation required for this specific check.</td>
+              </tr>
+              <tr>
+                <td><span class="status-guide-status"><span class="status-dot status-fail-dot"></span>FAIL</span></td>
+                <td>The tested configuration does not satisfy the check.</td>
+                <td><strong>A security control gap was identified</strong></td>
+                <td>Investigate and remediate according to risk.</td>
+              </tr>
+              <tr>
+                <td><span class="status-guide-status"><span class="status-dot status-manual-dot"></span>MANUAL</span></td>
+                <td>The scanner cannot conclusively determine compliance automatically.</td>
+                <td><strong>Manual validation is required</strong></td>
+                <td>Security/admin team must verify the control.</td>
+              </tr>
+              <tr>
+                <td><span class="status-guide-status"><span class="status-dot status-na-dot"></span>NOT APPLICABLE</span></td>
+                <td>The control does not apply to the environment/resource.</td>
+                <td><strong>Control is outside the scope of this environment</strong></td>
+                <td>Normally no remediation required.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Findings Explorer Section -->
+      <div class="card findings-card">
+        <div class="card-header findings-header">
+          <div>
+            <h3>Security Findings Explorer</h3>
+            <span id="findingsSubtitle" class="card-sub">Detailed audit items and remediations</span>
+          </div>
+
+          <div class="filter-controls">
+            <!-- Search -->
+            <div class="search-box">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8"/>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+              </svg>
+              <input type="text" id="findingSearch" placeholder="Search by title, ID, service, ARN...">
+            </div>
+
+            <!-- Status Filter -->
+            <select id="statusFilter" class="select-box">
+              <option value="all">All Statuses</option>
+              <option value="FAIL" selected>Failures Only</option>
+              <option value="PASS">Passes Only</option>
+            </select>
+
+            <!-- Severity Filter -->
+            <select id="severityFilter" class="select-box">
+              <option value="all">All Severities</option>
+              <option value="critical">Critical Only</option>
+              <option value="high">High & Above</option>
+              <option value="medium">Medium & Above</option>
+              <option value="low">Low & Above</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Findings List -->
+        <div id="findingsList" class="findings-list">
+          <!-- Populated by JS -->
+        </div>
+
+        <div id="noFindingsMsg" class="no-findings" style="display: none;">
+          <p>No findings matched the selected filters.</p>
+        </div>
+      </div>
+
+    </section>
+  </main>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- PDF Customization Modal -->
+  <div id="configModal" class="modal-backdrop" style="display: none;">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>PDF Report Customization</h3>
+        <button id="closeConfigModalBtn" class="close-btn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="cfgTitle">Report Title</label>
+          <input type="text" id="cfgTitle" value="Cloud Security Assessment Report">
+        </div>
+        <div class="form-group">
+          <label for="cfgCompany">Organization / Client Name</label>
+          <input type="text" id="cfgCompany" value="Enterprise Cloud Security Audit">
+        </div>
+        <div class="form-group">
+          <label for="cfgAssessor">Lead Assessor / Team</label>
+          <input type="text" id="cfgAssessor" value="Security Automation & Compliance Team">
+        </div>
+        <div class="form-group-row">
+          <div class="form-group">
+            <label for="cfgFilter">Finding Scope</label>
+            <select id="cfgFilter">
+              <option value="failed" selected>Failed Findings Only (Recommended)</option>
+              <option value="all">All Evaluated Findings (Passed + Failed)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="cfgSeverity">Severity Cutoff</label>
+            <select id="cfgSeverity">
+              <option value="all" selected>All Severities</option>
+              <option value="high">Critical & High Only</option>
+              <option value="medium">Critical, High & Medium</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="saveConfigBtn" class="btn btn-secondary">Apply Settings</button>
+        <button id="modalExportPdfBtn" class="btn btn-primary">Generate PDF Now</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js?v=41"></script>
+</body>
+</html>

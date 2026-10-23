@@ -1,0 +1,430 @@
+[
+  {
+    "AssessmentStartTime": "2026-09-28T14:30:00Z",
+    "FindingUniqueId": "prowler-aws-iam_root_mfa_enabled-123456789012-global",
+    "Provider": "aws",
+    "Profile": "production",
+    "AccountId": "123456789012",
+    "AccountName": "Prod-Cloud-Environment",
+    "Region": "global",
+    "ServiceName": "iam",
+    "SubServiceName": "iam-user",
+    "CheckID": "iam_root_mfa_enabled",
+    "CheckTitle": "Ensure MFA is enabled for the 'root' user account",
+    "CheckType": ["Identity and Access Management", "MFA"],
+    "Status": "FAIL",
+    "StatusExtended": "Root account does not have MFA (Multi-Factor Authentication) enabled.",
+    "Severity": "critical",
+    "ResourceType": "AwsIamUser",
+    "ResourceId": "root",
+    "ResourceArn": "arn:aws:iam::123456789012:root",
+    "Description": "The root account is the most privileged user in an AWS account. MFA adds an extra layer of protection.",
+    "Risk": "Compromise of the root account grants full administrative control over all resources in the AWS environment.",
+    "Remediation": {
+      "Recommendation": {
+        "Text": "Sign in to the AWS Management Console as root, go to IAM > Security Credentials, and enable virtual or hardware MFA.",
+        "Url": "https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_mfa_enable-root.html"
+      },
+      "Code": {
+        "NativeIaC": "",
+        "Terraform": "",
+        "CLI": "aws iam create-virtual-mfa-device --virtual-mfa-device-name root-mfa --outfile QRCode.png",
+        "Other": ""
+      }
+    },
+    "Compliance": {
+      "CIS-1.5": ["1.5"],
+      "CIS-2.0": ["1.5"],
+      "NIST-800-53": ["AC-2(1)", "IA-2(1)"],
+      "PCI-3.2.1": ["8.3.1"],
+      "ISO-27001": ["A.9.4.2"]
+    },
+    "Categories": ["identity-compliance", "root-credentials"]
+  },
+  {
+    "AssessmentStartTime": "2026-09-28T14:30:00Z",
+    "FindingUniqueId": "prowler-aws-s3_bucket_public_access-123456789012-us-east-1-corp-finance-backup",
+    "Provider": "aws",
+    "Profile": "production",
+    "AccountId": "123456789012",
+    "AccountName": "Prod-Cloud-Environment",
+    "Region": "us-east-1",
+    "ServiceName": "s3",
+    "SubServiceName": "s3-bucket",
+    "CheckID": "s3_bucket_public_access",
+    "CheckTitle": "Ensure S3 Buckets do not allow public read/write access",
+    "CheckType": ["Storage", "Data Protection"],
+    "Status": "FAIL",
+    "StatusExtended": "S3 Bucket 'corp-finance-backup' has public read access granted via ACL and policy.",
+    "Severity": "critical",
+    "ResourceType": "AwsS3Bucket",
+    "ResourceId": "corp-finance-backup",
+    "ResourceArn": "arn:aws:s3:::corp-finance-backup",
+    "Description": "Public S3 buckets allow unauthenticated internet users to view or download sensitive business data.",
+    "Risk": "Data breach, accidental exposure of confidential financial records, intellectual property theft.",
+    "Remediation": {
+      "Recommendation": {
+        "Text": "Enable S3 Block Public Access on the bucket and restrict bucket ACL permissions to authorized identities.",
+        "Url": "https://docs.aws.amazon.com/AmazonS3/latest/userguide/access-control-block-public-access.html"
+      },
+      "Code": {
+        "CLI": "aws s3api put-public-access-block --bucket corp-finance-backup --public-access-block-configuration BlockPublicAcls=true,IgnorePublicAcls=true,BlockPublicPolicy=true,RestrictPublicBuckets=true",
+        "Terraform": "resource \"aws_s3_bucket_public_access_block\" \"finance\" {\n  bucket = \"corp-finance-backup\"\n  block_public_acls = true\n  block_public_policy = true\n  ignore_public_acls = true\n  restrict_public_buckets = true\n}"
+      }
+    },
+    "Compliance": {
+      "CIS-1.5": ["2.1.5"],
+      "NIST-800-53": ["AC-3", "SC-7"],
+      "PCI-3.2.1": ["1.2.1", "1.3.1"]
+    },
+    "Categories": ["data-protection", "s3-security"]
+  },
+  {
+    "AssessmentStartTime": "2026-09-28T14:30:00Z",
+    "FindingUniqueId": "prowler-aws-ec2_securitygroup_allow_ingress_from_internet_to_tcp_port_22-123456789012-us-east-1-sg-09a8b7c6",
+    "Provider": "aws",
+    "Profile": "production",
+    "AccountId": "123456789012",
+    "AccountName": "Prod-Cloud-Environment",
+    "Region": "us-east-1",
+    "ServiceName": "ec2",
+    "SubServiceName": "security-group",
+    "CheckID": "ec2_securitygroup_allow_ingress_from_internet_to_tcp_port_22",
+    "CheckTitle": "Ensure no Security Groups allow ingress from 0.0.0.0/0 to port 22 (SSH)",
+    "CheckType": ["Network Security", "Firewall"],
+    "Status": "FAIL",
+    "StatusExtended": "Security group 'launch-wizard-1' (sg-09a8b7c6) has port 22 open to 0.0.0.0/0.",
+    "Severity": "high",
+    "ResourceType": "AwsEc2SecurityGroup",
+    "ResourceId": "sg-09a8b7c6",
+    "ResourceArn": "arn:aws:ec2:us-east-1:123456789012:security-group/sg-09a8b7c6",
+    "Description": "Security groups provide stateful filtering of ingress/egress network traffic to EC2 instances.",
+    "Risk": "Exposure of port 22 increases risk of brute force attacks, credential spraying, and unauthorized server takeover.",
+    "Remediation": {
+      "Recommendation": {
+        "Text": "Restrict inbound SSH access to corporate VPN IP ranges or use AWS Systems Manager Session Manager instead of direct SSH.",
+        "Url": "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/security-group-rules.html"
+      },
+      "Code": {
+        "CLI": "aws ec2 revoke-security-group-ingress --group-id sg-09a8b7c6 --protocol tcp --port 22 --cidr 0.0.0.0/0"
+      }
+    },
+    "Compliance": {
+      "CIS-1.5": ["5.2"],
+      "NIST-800-53": ["AC-4", "SC-7"],
+      "PCI-3.2.1": ["1.3.2"]
+    },
+    "Categories": ["network-security"]
+  },
+  {
+    "AssessmentStartTime": "2026-09-28T14:30:00Z",
+    "FindingUniqueId": "prowler-aws-cloudtrail_multi_region_enabled-123456789012-us-east-1",
+    "Provider": "aws",
+    "Profile": "production",
+    "AccountId": "123456789012",
+    "AccountName": "Prod-Cloud-Environment",
+    "Region": "us-east-1",
+    "ServiceName": "cloudtrail",
+    "SubServiceName": "trail",
+    "CheckID": "cloudtrail_multi_region_enabled",
+    "CheckTitle": "Ensure CloudTrail is enabled in all regions",
+    "CheckType": ["Logging and Auditing"],
+    "Status": "FAIL",
+    "StatusExtended": "CloudTrail 'security-trail' is configured for us-east-1 only, missing activity in other active regions.",
+    "Severity": "high",
+    "ResourceType": "AwsCloudTrail",
+    "ResourceId": "security-trail",
+    "ResourceArn": "arn:aws:cloudtrail:us-east-1:123456789012:trail/security-trail",
+    "Description": "CloudTrail records AWS API calls for your account and delivers log files to an Amazon S3 bucket.",
+    "Risk": "Adversaries can perform unmonitored actions in unlogged regions, hindering forensics and threat detection.",
+    "Remediation": {
+      "Recommendation": {
+        "Text": "Update CloudTrail configuration to enable multi-region logging for all global services and regions.",
+        "Url": "https://docs.aws.amazon.com/awscloudtrail/latest/userguide/receive-cloudtrail-log-files-from-multiple-regions.html"
+      },
+      "Code": {
+        "CLI": "aws cloudtrail update-trail --name security-trail --is-multi-region-trail"
+      }
+    },
+    "Compliance": {
+      "CIS-1.5": ["3.1"],
+      "NIST-800-53": ["AU-2", "AU-3", "AU-12"],
+      "ISO-27001": ["A.12.4.1"]
+    },
+    "Categories": ["audit-logging"]
+  },
+  {
+    "AssessmentStartTime": "2026-09-28T14:30:00Z",
+    "FindingUniqueId": "prowler-aws-kms_cmk_rotation_enabled-123456789012-us-east-1-key-abc123",
+    "Provider": "aws",
+    "Profile": "production",
+    "AccountId": "123456789012",
+    "AccountName": "Prod-Cloud-Environment",
+    "Region": "us-east-1",
+    "ServiceName": "kms",
+    "SubServiceName": "key",
+    "CheckID": "kms_cmk_rotation_enabled",
+    "CheckTitle": "Ensure rotation for customer managed CMKs is enabled",
+    "CheckType": ["Cryptography", "Data Protection"],
+    "Status": "FAIL",
+    "StatusExtended": "KMS Customer Master Key 'key-abc123' does not have automatic yearly rotation enabled.",
+    "Severity": "medium",
+    "ResourceType": "AwsKmsKey",
+    "ResourceId": "key-abc123",
+    "ResourceArn": "arn:aws:kms:us-east-1:123456789012:key/key-abc123",
+    "Description": "AWS KMS CMKs should have annual automatic key rotation enabled to limit the lifespan of encrypted data keys.",
+    "Risk": "Failure to rotate keys expands the blast radius if cryptographic material is compromised.",
+    "Remediation": {
+      "Recommendation": {
+        "Text": "Enable automatic key rotation for the customer managed key in the KMS console or via AWS CLI.",
+        "Url": "https://docs.aws.amazon.com/kms/latest/developerguide/rotate-keys.html"
+      },
+      "Code": {
+        "CLI": "aws kms enable-key-rotation --key-id key-abc123"
+      }
+    },
+    "Compliance": {
+      "CIS-1.5": ["3.8"],
+      "NIST-800-53": ["SC-12"],
+      "PCI-3.2.1": ["3.6.4"]
+    },
+    "Categories": ["encryption", "key-management"]
+  },
+  {
+    "AssessmentStartTime": "2026-09-28T14:30:00Z",
+    "FindingUniqueId": "prowler-aws-s3_bucket_default_encryption-123456789012-us-east-1-app-assets",
+    "Provider": "aws",
+    "Profile": "production",
+    "AccountId": "123456789012",
+    "AccountName": "Prod-Cloud-Environment",
+    "Region": "us-east-1",
+    "ServiceName": "s3",
+    "SubServiceName": "s3-bucket",
+    "CheckID": "s3_bucket_default_encryption",
+    "CheckTitle": "Ensure S3 Buckets have Default Encryption enabled",
+    "CheckType": ["Storage", "Encryption"],
+    "Status": "PASS",
+    "StatusExtended": "S3 Bucket 'app-assets' has default server-side encryption enabled (AES256).",
+    "Severity": "high",
+    "ResourceType": "AwsS3Bucket",
+    "ResourceId": "app-assets",
+    "ResourceArn": "arn:aws:s3:::app-assets",
+    "Description": "Amazon S3 default encryption ensures that all objects uploaded to the bucket are automatically encrypted at rest.",
+    "Risk": "Data at rest in S3 without encryption may be exposed if storage media is compromised.",
+    "Remediation": {
+      "Recommendation": {
+        "Text": "Bucket is properly encrypted with AES-256.",
+        "Url": "https://docs.aws.amazon.com/AmazonS3/latest/userguide/default-bucket-encryption.html"
+      }
+    },
+    "Compliance": {
+      "CIS-1.5": ["2.1.1"],
+      "NIST-800-53": ["SC-13", "SC-28"]
+    },
+    "Categories": ["encryption"]
+  },
+  {
+    "AssessmentStartTime": "2026-09-28T14:30:00Z",
+    "FindingUniqueId": "prowler-aws-iam_password_policy_minimum_length_14-123456789012-global",
+    "Provider": "aws",
+    "Profile": "production",
+    "AccountId": "123456789012",
+    "AccountName": "Prod-Cloud-Environment",
+    "Region": "global",
+    "ServiceName": "iam",
+    "SubServiceName": "password-policy",
+    "CheckID": "iam_password_policy_minimum_length_14",
+    "CheckTitle": "Ensure IAM password policy requires minimum length of 14 or greater",
+    "CheckType": ["Identity and Access Management"],
+    "Status": "PASS",
+    "StatusExtended": "IAM password policy requires minimum length of 16 characters.",
+    "Severity": "medium",
+    "ResourceType": "AwsIamPolicy",
+    "ResourceId": "iam-password-policy",
+    "ResourceArn": "arn:aws:iam::123456789012:password-policy",
+    "Description": "Password length policy enforces stronger user passwords resistant to dictionary attacks.",
+    "Risk": "Short passwords are susceptible to cracking.",
+    "Remediation": {
+      "Recommendation": {
+        "Text": "Password policy meets and exceeds the recommended length requirement.",
+        "Url": "https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_passwords_account-policy.html"
+      }
+    },
+    "Compliance": {
+      "CIS-1.5": ["1.8"],
+      "NIST-800-53": ["IA-5(1)"]
+    },
+    "Categories": ["password-policy"]
+  },
+  {
+    "AssessmentStartTime": "2026-09-28T14:30:00Z",
+    "FindingUniqueId": "prowler-aws-rds_instance_storage_encrypted-123456789012-us-east-1-db-prod-primary",
+    "Provider": "aws",
+    "Profile": "production",
+    "AccountId": "123456789012",
+    "AccountName": "Prod-Cloud-Environment",
+    "Region": "us-east-1",
+    "ServiceName": "rds",
+    "SubServiceName": "db-instance",
+    "CheckID": "rds_instance_storage_encrypted",
+    "CheckTitle": "Ensure RDS database instances have storage encryption enabled",
+    "CheckType": ["Database", "Encryption"],
+    "Status": "PASS",
+    "StatusExtended": "RDS Instance 'db-prod-primary' has storage encryption enabled using KMS key arn:aws:kms:us-east-1:123456789012:key/rds-key.",
+    "Severity": "high",
+    "ResourceType": "AwsRdsInstance",
+    "ResourceId": "db-prod-primary",
+    "ResourceArn": "arn:aws:rds:us-east-1:123456789012:db:db-prod-primary",
+    "Description": "Amazon RDS encrypted DB instances use industry-standard AES-256 encryption algorithm to encrypt your data.",
+    "Risk": "Unencrypted database snapshots and volumes risk exposure.",
+    "Remediation": {
+      "Recommendation": {
+        "Text": "Database is properly encrypted with KMS.",
+        "Url": "https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Overview.Encryption.html"
+      }
+    },
+    "Compliance": {
+      "CIS-1.5": ["2.3.1"],
+      "NIST-800-53": ["SC-13", "SC-28"]
+    },
+    "Categories": ["database-security"]
+  },
+  {
+    "AssessmentStartTime": "2026-09-28T14:30:00Z",
+    "FindingUniqueId": "prowler-aws-vpc_flow_logs_enabled-123456789012-us-east-1-vpc-998877",
+    "Provider": "aws",
+    "Profile": "production",
+    "AccountId": "123456789012",
+    "AccountName": "Prod-Cloud-Environment",
+    "Region": "us-east-1",
+    "ServiceName": "vpc",
+    "SubServiceName": "vpc-flow-logs",
+    "CheckID": "vpc_flow_logs_enabled",
+    "CheckTitle": "Ensure VPC flow logging is enabled in all VPCs",
+    "CheckType": ["Network Security", "Logging and Auditing"],
+    "Status": "FAIL",
+    "StatusExtended": "VPC 'vpc-998877' (Production-VPC) does not have VPC Flow Logs enabled.",
+    "Severity": "medium",
+    "ResourceType": "AwsVpc",
+    "ResourceId": "vpc-998877",
+    "ResourceArn": "arn:aws:ec2:us-east-1:123456789012:vpc/vpc-998877",
+    "Description": "VPC Flow Logs capture IP traffic information entering and leaving network interfaces in your VPC.",
+    "Risk": "Without flow logs, security investigations and lateral movement detection are severely impaired.",
+    "Remediation": {
+      "Recommendation": {
+        "Text": "Create flow logs for the VPC to publish traffic data to CloudWatch Logs or an Amazon S3 bucket.",
+        "Url": "https://docs.aws.amazon.com/vpc/latest/userguide/flow-logs.html"
+      },
+      "Code": {
+        "CLI": "aws ec2 create-flow-logs --resource-type VPC --resource-ids vpc-998877 --traffic-type ALL --log-destination-type s3 --log-destination arn:aws:s3:::corp-vpc-logs"
+      }
+    },
+    "Compliance": {
+      "CIS-1.5": ["3.9"],
+      "NIST-800-53": ["AU-2", "AU-12"]
+    },
+    "Categories": ["network-monitoring"]
+  },
+  {
+    "AssessmentStartTime": "2026-09-28T14:30:00Z",
+    "FindingUniqueId": "prowler-aws-guardduty_is_enabled-123456789012-us-east-1",
+    "Provider": "aws",
+    "Profile": "production",
+    "AccountId": "123456789012",
+    "AccountName": "Prod-Cloud-Environment",
+    "Region": "us-east-1",
+    "ServiceName": "guardduty",
+    "SubServiceName": "detector",
+    "CheckID": "guardduty_is_enabled",
+    "CheckTitle": "Ensure Amazon GuardDuty is enabled in all active regions",
+    "CheckType": ["Threat Detection"],
+    "Status": "PASS",
+    "StatusExtended": "Amazon GuardDuty is enabled in region us-east-1 (Detector ID: det-445566).",
+    "Severity": "high",
+    "ResourceType": "AwsGuardDutyDetector",
+    "ResourceId": "det-445566",
+    "ResourceArn": "arn:aws:guardduty:us-east-1:123456789012:detector/det-445566",
+    "Description": "GuardDuty is an intelligent threat detection service that continuously monitors malicious activity and unauthorized behavior.",
+    "Risk": "Absence of threat detection enables undetected compromise.",
+    "Remediation": {
+      "Recommendation": {
+        "Text": "GuardDuty detector is properly configured and active.",
+        "Url": "https://docs.aws.amazon.com/guardduty/latest/ug/guardduty_settingup.html"
+      }
+    },
+    "Compliance": {
+      "CIS-1.5": ["3.10"],
+      "NIST-800-53": ["SI-4"]
+    },
+    "Categories": ["threat-detection"]
+  },
+  {
+    "AssessmentStartTime": "2026-09-28T14:30:00Z",
+    "FindingUniqueId": "prowler-aws-iam_no_custom_policy_permissive_role_assumption-123456789012-role-dev-admin",
+    "Provider": "aws",
+    "Profile": "production",
+    "AccountId": "123456789012",
+    "AccountName": "Prod-Cloud-Environment",
+    "Region": "global",
+    "ServiceName": "iam",
+    "SubServiceName": "iam-role",
+    "CheckID": "iam_no_custom_policy_permissive_role_assumption",
+    "CheckTitle": "Ensure IAM roles do not allow wildcard '*' in trust relationship",
+    "CheckType": ["Identity and Access Management", "Privilege Escalation"],
+    "Status": "FAIL",
+    "StatusExtended": "Role 'DevOps-Admin-Role' allows sts:AssumeRole from Principal '*'.",
+    "Severity": "critical",
+    "ResourceType": "AwsIamRole",
+    "ResourceId": "DevOps-Admin-Role",
+    "ResourceArn": "arn:aws:iam::123456789012:role/DevOps-Admin-Role",
+    "Description": "Wildcard principals in IAM role trust relationships allow any authenticated AWS entity across the entire AWS ecosystem to assume the role.",
+    "Risk": "Total account takeover by external third parties with no trust boundary.",
+    "Remediation": {
+      "Recommendation": {
+        "Text": "Modify the trust policy of the role to restrict Principal to specific AWS Account IDs or ARNs.",
+        "Url": "https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_terms-and-concepts.html"
+      },
+      "Code": {
+        "CLI": "aws iam update-assume-role-policy --role-name DevOps-Admin-Role --policy-document file://secure-trust-policy.json"
+      }
+    },
+    "Compliance": {
+      "CIS-1.5": ["1.16"],
+      "NIST-800-53": ["AC-2", "AC-3"]
+    },
+    "Categories": ["privilege-escalation"]
+  },
+  {
+    "AssessmentStartTime": "2026-09-28T14:30:00Z",
+    "FindingUniqueId": "prowler-aws-s3_bucket_object_versioning-123456789012-us-east-1-app-assets",
+    "Provider": "aws",
+    "Profile": "production",
+    "AccountId": "123456789012",
+    "AccountName": "Prod-Cloud-Environment",
+    "Region": "us-east-1",
+    "ServiceName": "s3",
+    "SubServiceName": "s3-bucket",
+    "CheckID": "s3_bucket_object_versioning",
+    "CheckTitle": "Ensure S3 Buckets have Object Versioning enabled",
+    "CheckType": ["Storage", "Resilience"],
+    "Status": "PASS",
+    "StatusExtended": "S3 Bucket 'app-assets' has versioning enabled.",
+    "Severity": "low",
+    "ResourceType": "AwsS3Bucket",
+    "ResourceId": "app-assets",
+    "ResourceArn": "arn:aws:s3:::app-assets",
+    "Description": "Versioning in Amazon S3 is a means of keeping multiple variants of an object in the same bucket.",
+    "Risk": "Accidental deletion or overwriting of files.",
+    "Remediation": {
+      "Recommendation": {
+        "Text": "Versioning is active.",
+        "Url": "https://docs.aws.amazon.com/AmazonS3/latest/userguide/Versioning.html"
+      }
+    },
+    "Compliance": {
+      "CIS-1.5": ["2.1.3"],
+      "NIST-800-53": ["CP-9", "SI-12"]
+    },
+    "Categories": ["data-protection"]
+  }
+]
