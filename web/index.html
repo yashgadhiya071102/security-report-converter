@@ -169,6 +169,10 @@
           <span class="meta-lbl">Client Name</span>
           <span id="metaClient" class="meta-val"></span>
         </div>
+        <div class="meta-item" id="metaAssessorItem" style="display: none;">
+          <span class="meta-lbl">Lead Assessor</span>
+          <span id="metaAssessor" class="meta-val"></span>
+        </div>
         <div class="meta-item">
           <span class="meta-lbl">Scan Timestamp</span>
           <span id="metaTimestamp" class="meta-val">-</span>
@@ -462,15 +466,15 @@
       <div class="modal-body">
         <div class="form-group">
           <label for="cfgTitle">Report Title</label>
-          <input type="text" id="cfgTitle" value="Cloud Security Assessment Report">
+          <input type="text" id="cfgTitle" value="Executive Security Report">
         </div>
         <div class="form-group">
           <label for="cfgCompany">Organization / Client Name</label>
-          <input type="text" id="cfgCompany" value="Enterprise Cloud Security Audit">
+          <input type="text" id="cfgCompany" value="" placeholder="Shown as Client Name in the report">
         </div>
         <div class="form-group">
           <label for="cfgAssessor">Lead Assessor / Team</label>
-          <input type="text" id="cfgAssessor" value="Security Automation & Compliance Team">
+          <input type="text" id="cfgAssessor" value="" placeholder="Optional - shown in the report header">
         </div>
         <div class="form-group-row">
           <div class="form-group">
@@ -497,6 +501,6 @@
     </div>
   </div>
 
-  <script src="app.js?v=41"></script>
+  <script src="app.js?v=42"></script>
 </body>
 </html>

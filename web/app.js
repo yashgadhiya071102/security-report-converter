@@ -9,10 +9,12 @@ let currentFileName = "security_report";
 let severityChartInstance = null;
 let servicesChartInstance = null;
 
+// Defaults mirror what the page already shows, so output is unchanged until the user edits settings.
+const DEFAULT_REPORT_TITLE = "Executive Security Report";
 let pdfConfig = {
-  report_title: "Cloud Security Assessment Report",
-  company_name: "Enterprise Cloud Security Audit",
-  assessor_name: "Security Automation & Compliance Team",
+  report_title: DEFAULT_REPORT_TITLE,
+  company_name: "",      // fills the "Client Name" field
+  assessor_name: "",     // optional extra header field
   failed_only: true,
   severity_threshold: "all"
 };
@@ -144,10 +146,14 @@ function setupEventListeners() {
   // Config Modal
   openConfigModalBtn.addEventListener('click', () => {
     document.getElementById('cfgTitle').value = pdfConfig.report_title;
-    document.getElementById('cfgCompany').value = pdfConfig.company_name;
+    document.getElementById('cfgCompany').value = clientNameInput.value.trim();
     document.getElementById('cfgAssessor').value = pdfConfig.assessor_name;
-    document.getElementById('cfgFilter').value = pdfConfig.failed_only ? 'failed' : 'all';
-    document.getElementById('cfgSeverity').value = pdfConfig.severity_threshold;
+    // Reflect what the findings list is currently showing
+    const filterVal = statusFilter.value === 'FAIL' ? 'failed' : 'all';
+    const sevVal = ['all', 'high', 'medium'].includes(severityFilter.value) ? severityFilter.value : 'all';
+    document.getElementById('cfgFilter').value = filterVal;
+    document.getElementById('cfgSeverity').value = sevVal;
+    modalSnapshot = { filter: filterVal, severity: sevVal };
     configModal.style.display = 'flex';
   });
 
@@ -167,12 +173,53 @@ function setupEventListeners() {
   });
 }
 
+let modalSnapshot = null;
+
 function saveModalConfig() {
-  pdfConfig.report_title = document.getElementById('cfgTitle').value.trim() || "Cloud Security Assessment Report";
-  pdfConfig.company_name = document.getElementById('cfgCompany').value.trim() || "Enterprise Cloud Security Audit";
-  pdfConfig.assessor_name = document.getElementById('cfgAssessor').value.trim() || "Security Automation Team";
+  pdfConfig.report_title = document.getElementById('cfgTitle').value.trim() || DEFAULT_REPORT_TITLE;
+  pdfConfig.company_name = document.getElementById('cfgCompany').value.trim();
+  pdfConfig.assessor_name = document.getElementById('cfgAssessor').value.trim();
   pdfConfig.failed_only = (document.getElementById('cfgFilter').value === 'failed');
   pdfConfig.severity_threshold = document.getElementById('cfgSeverity').value;
+  applyPdfConfig();
+}
+
+// Push the saved settings into the page that gets printed to PDF.
+// Layout is untouched: only text values and the existing filters change.
+function applyPdfConfig() {
+  // Report title -> existing heading
+  const titleEl = document.querySelector('.brand-title');
+  if (titleEl) titleEl.textContent = pdfConfig.report_title || DEFAULT_REPORT_TITLE;
+
+  // Organization / client -> existing "Client Name" field
+  clientNameInput.value = pdfConfig.company_name;
+
+  // Lead assessor -> optional header field (hidden when empty)
+  const item = document.getElementById('metaAssessorItem');
+  const val = document.getElementById('metaAssessor');
+  const strip = document.querySelector('.meta-strip');
+  if (item && val) {
+    val.textContent = pdfConfig.assessor_name;
+    const show = !!pdfConfig.assessor_name;
+    item.style.display = show ? '' : 'none';
+    if (strip) {
+      if (show) strip.style.setProperty('grid-template-columns', '1fr 1fr 1fr 1fr 1.15fr', 'important');
+      else strip.style.removeProperty('grid-template-columns');
+    }
+  }
+  updateManualReportFields();
+
+  // Scope + severity cutoff -> the same filters that control the findings list.
+  // Only touched if changed in the modal, so on-page filters (e.g. "Passes only") aren't clobbered.
+  const filterVal = pdfConfig.failed_only ? 'failed' : 'all';
+  if (!modalSnapshot || modalSnapshot.filter !== filterVal) {
+    statusFilter.value = pdfConfig.failed_only ? 'FAIL' : 'all';
+  }
+  if (!modalSnapshot || modalSnapshot.severity !== pdfConfig.severity_threshold) {
+    severityFilter.value = pdfConfig.severity_threshold;
+  }
+  modalSnapshot = null;
+  filterAndRenderFindings();
 }
 
 function updateManualReportFields() {
